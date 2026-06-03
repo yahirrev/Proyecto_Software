@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1022</width>
-    <height>600</height>
+    <width>1093</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>0</x>
       <y>0</y>
-      <width>801</width>
-      <height>311</height>
+      <width>541</width>
+      <height>761</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -32,8 +32,8 @@
     <widget class="QLineEdit" name="txt_buscar_usuario">
      <property name="geometry">
       <rect>
-       <x>30</x>
-       <y>10</y>
+       <x>290</x>
+       <y>150</y>
        <width>113</width>
        <height>21</height>
       </rect>
@@ -45,10 +45,10 @@
     <widget class="QTableWidget" name="tabla_usuarios">
      <property name="geometry">
       <rect>
-       <x>30</x>
-       <y>40</y>
-       <width>751</width>
-       <height>192</height>
+       <x>10</x>
+       <y>190</y>
+       <width>471</width>
+       <height>221</height>
       </rect>
      </property>
      <property name="selectionBehavior">
@@ -84,7 +84,7 @@
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>260</y>
+       <y>430</y>
        <width>141</width>
        <height>24</height>
       </rect>
@@ -96,24 +96,63 @@
     <widget class="QPushButton" name="btn_desactivar_usuario">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>260</y>
-       <width>161</width>
+       <x>200</x>
+       <y>430</y>
+       <width>141</width>
        <height>24</height>
       </rect>
      </property>
      <property name="text">
-      <string>Desactivar Cuenta / Baja</string>
+      <string>Desactivar Cuenta </string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>150</y>
+       <width>241</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Buscar por nombre completo o usuario</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_volver">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>75</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Volver</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_activar_usuario">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>430</y>
+       <width>141</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Activar Cuenta</string>
      </property>
     </widget>
    </widget>
    <widget class="QFrame" name="frame_2">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>310</y>
-      <width>801</width>
-      <height>261</height>
+      <x>540</x>
+      <y>0</y>
+      <width>541</width>
+      <height>751</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -125,8 +164,8 @@
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>70</y>
+       <x>100</x>
+       <y>180</y>
        <width>121</width>
        <height>16</height>
       </rect>
@@ -138,8 +177,8 @@
     <widget class="QLabel" name="label_3">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>110</y>
+       <x>100</x>
+       <y>220</y>
        <width>91</width>
        <height>16</height>
       </rect>
@@ -151,8 +190,8 @@
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>30</y>
+       <x>100</x>
+       <y>140</y>
        <width>121</width>
        <height>16</height>
       </rect>
@@ -164,8 +203,8 @@
     <widget class="QLineEdit" name="txt_nombre_completo">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>30</y>
+       <x>350</x>
+       <y>140</y>
        <width>113</width>
        <height>21</height>
       </rect>
@@ -174,8 +213,8 @@
     <widget class="QLineEdit" name="txt_username">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>70</y>
+       <x>350</x>
+       <y>180</y>
        <width>113</width>
        <height>21</height>
       </rect>
@@ -184,8 +223,8 @@
     <widget class="QLineEdit" name="txt_password_user">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>110</y>
+       <x>350</x>
+       <y>220</y>
        <width>113</width>
        <height>21</height>
       </rect>
@@ -194,8 +233,8 @@
     <widget class="QComboBox" name="combo_rol">
      <property name="geometry">
       <rect>
-       <x>450</x>
-       <y>30</y>
+       <x>350</x>
+       <y>260</y>
        <width>111</width>
        <height>22</height>
       </rect>
@@ -214,8 +253,8 @@
     <widget class="QLabel" name="label_4">
      <property name="geometry">
       <rect>
-       <x>370</x>
-       <y>30</y>
+       <x>100</x>
+       <y>260</y>
        <width>49</width>
        <height>16</height>
       </rect>
@@ -227,8 +266,8 @@
     <widget class="QPushButton" name="btn_guardar_usuario">
      <property name="geometry">
       <rect>
-       <x>30</x>
-       <y>170</y>
+       <x>90</x>
+       <y>430</y>
        <width>131</width>
        <height>24</height>
       </rect>
@@ -240,8 +279,8 @@
     <widget class="QPushButton" name="btn_actualizar_usuario">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>170</y>
+       <x>340</x>
+       <y>430</y>
        <width>131</width>
        <height>24</height>
       </rect>
@@ -250,19 +289,19 @@
       <string>Modificar datos</string>
      </property>
     </widget>
-   </widget>
-   <widget class="QPushButton" name="btn_volver">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>75</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Volver</string>
-    </property>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>50</y>
+       <width>181</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>REGISTRAR NUEVO USUARIO</string>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -270,7 +309,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1022</width>
+     <width>1093</width>
      <height>22</height>
     </rect>
    </property>

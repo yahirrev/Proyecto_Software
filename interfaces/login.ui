@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>-10</x>
       <y>0</y>
-      <width>801</width>
-      <height>581</height>
+      <width>1291</width>
+      <height>691</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -44,8 +44,8 @@ QLabel {
     <widget class="QLineEdit" name="txt_usuario">
      <property name="geometry">
       <rect>
-       <x>480</x>
-       <y>130</y>
+       <x>550</x>
+       <y>230</y>
        <width>113</width>
        <height>21</height>
       </rect>
@@ -54,8 +54,8 @@ QLabel {
     <widget class="QLineEdit" name="txt_password">
      <property name="geometry">
       <rect>
-       <x>480</x>
-       <y>210</y>
+       <x>550</x>
+       <y>290</y>
        <width>113</width>
        <height>21</height>
       </rect>
@@ -67,8 +67,8 @@ QLabel {
     <widget class="QPushButton" name="btn_ingresar">
      <property name="geometry">
       <rect>
-       <x>370</x>
-       <y>350</y>
+       <x>470</x>
+       <y>360</y>
        <width>75</width>
        <height>24</height>
       </rect>
@@ -80,8 +80,8 @@ QLabel {
     <widget class="QLabel" name="label_2">
      <property name="geometry">
       <rect>
-       <x>240</x>
-       <y>220</y>
+       <x>380</x>
+       <y>290</y>
        <width>81</width>
        <height>21</height>
       </rect>
@@ -93,8 +93,8 @@ QLabel {
     <widget class="QLabel" name="label">
      <property name="geometry">
       <rect>
-       <x>240</x>
-       <y>130</y>
+       <x>380</x>
+       <y>230</y>
        <width>81</width>
        <height>21</height>
       </rect>
@@ -110,7 +110,7 @@ QLabel {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1280</width>
      <height>22</height>
     </rect>
    </property>

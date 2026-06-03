@@ -18,6 +18,7 @@ class VentanaMenuPrincipal(QWidget):
         ruta_ui = os.path.join(ruta_actual, "interfaces", "menu_principal.ui")
         self.ui = loader.load(ruta_ui, self)
         self.ui.setWindowTitle("Ferretería Moret - Menú Principal")
+        self.ui.setFixedSize(1024, 768) 
         
         self.id_usuario = id_usuario
         self.nombre = nombre_usuario
@@ -57,6 +58,7 @@ class VentanaLogin(QMainWindow):
         ruta_ui = os.path.join(ruta_actual, "interfaces", "login.ui")
         self.ui = loader.load(ruta_ui, self)
         self.ui.setWindowTitle("Ferretería Moret - Control de Acceso")
+        self.ui.setFixedSize(1024, 768)
         
         self.ui.btn_ingresar.clicked.connect(self.verificar_credenciales)
 
