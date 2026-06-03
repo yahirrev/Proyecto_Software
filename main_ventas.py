@@ -22,7 +22,7 @@ class VentanaVentas(QWidget):
         self.ui = loader.load(ruta_ui, self)
         if self.ui:
             self.ui.setWindowTitle("Ferretería Moret - Terminal de Ventas POS")
-            self.ui.setMinimumSize(800, 600)
+            self.ui.setFixedSize(1024, 768)
         
         self.ui.btn_volver.clicked.connect(self.volver_al_menu)
         self.ui.btn_volver_2.clicked.connect(self.volver_al_menu)

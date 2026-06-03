@@ -4,6 +4,7 @@ from mysql.connector import Error
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox, QTableWidgetItem
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QHeaderView
 import os
 
 
@@ -21,7 +22,7 @@ class VentanaUsuarios(QMainWindow):
         self.ui.setWindowTitle("Ferretería Moret - Control de Usuarios y Personal")
 
         if self.ui:
-            self.ui.setMinimumSize(800, 600)
+            self.ui.setFixedSize(1024, 768)
 
         self.ui.btn_volver.clicked.connect(self.volver_al_menu)
         
@@ -29,11 +30,18 @@ class VentanaUsuarios(QMainWindow):
         self.ui.btn_cargar_usuario.clicked.connect(self.cargar_atributos_usuario)
         self.ui.btn_actualizar_usuario.clicked.connect(self.actualizar_usuario)
         self.ui.btn_desactivar_usuario.clicked.connect(self.desactivar_usuario)
+        self.ui.btn_activar_usuario.clicked.connect(self.activar_usuario)
         
         self.ui.txt_buscar_usuario.textChanged.connect(self.cargar_tabla_usuarios)
         
         self.id_usuario_seleccionado = None
         self.cargar_tabla_usuarios()
+        header = self.ui.tabla_usuarios.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
 
     def volver_al_menu(self):
         if self.ventana_menu:
@@ -68,7 +76,7 @@ class VentanaUsuarios(QMainWindow):
                 for col_idx, valor in enumerate(fila_datos):
                     item = QTableWidgetItem(str(valor))
                     self.ui.tabla_usuarios.setItem(fila_idx, col_idx, item)
-                    
+
             cursor.close()
             conexion.close()
         except Error as e:
@@ -200,6 +208,35 @@ class VentanaUsuarios(QMainWindow):
                 conexion.close()
             except Error as e:
                 QMessageBox.critical(self.ui, "Error", f"No se pudo cambiar el estatus: {e}")
+
+    def activar_usuario(self):
+        if not self.id_usuario_seleccionado:
+            QMessageBox.warning(self.ui, "Atención", "Carga primero el perfil que deseas reactivar.")
+            return
+
+        respuesta = QMessageBox.question(
+             self.ui, "Confirmar Activación",
+                "¿Deseas reactivar esta cuenta?\nEl empleado recuperará el acceso al sistema.",
+                QMessageBox.Yes | QMessageBox.No
+    )
+
+        if respuesta == QMessageBox.Yes:
+            try:
+                conexion = self.conectar_bd()
+                cursor = conexion.cursor()
+
+                cursor.execute("UPDATE usuarios SET estatus = 'Activo' WHERE id_usuario = %s", 
+                          (self.id_usuario_seleccionado,))
+                conexion.commit()
+
+                QMessageBox.information(self.ui, "Cuenta Activada", "La cuenta ha sido reactivada exitosamente.")
+                self.limpiar_formulario()
+                self.cargar_tabla_usuarios()
+
+                cursor.close()
+                conexion.close()
+            except Error as e:
+                QMessageBox.critical(self.ui, "Error", f"No se pudo activar la cuenta: {e}")
 
     def limpiar_formulario(self):
         self.id_usuario_seleccionado = None
