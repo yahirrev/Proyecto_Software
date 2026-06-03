@@ -6,6 +6,7 @@ from PySide6.QtUiTools import QUiLoader
 import os
 from datetime import datetime
 
+
 class VentanaVentas(QWidget):
     def __init__(self, ventana_menu=None, id_usuario_real=1, nombre_empleado="Yahir"):
         super().__init__()
@@ -21,41 +22,25 @@ class VentanaVentas(QWidget):
         self.ui = loader.load(ruta_ui, self)
         if self.ui:
             self.ui.setWindowTitle("Ferretería Moret - Terminal de Ventas POS")
-            # Esto asegura que si el UI es un widget, tenga un tamaño mínimo
             self.ui.setMinimumSize(800, 600)
         
-        # =======================================================
-        # BOTONES PARA VOLVER AL MENÚ
-        # =======================================================
         self.ui.btn_volver.clicked.connect(self.volver_al_menu)
         self.ui.btn_volver_2.clicked.connect(self.volver_al_menu)
         self.ui.btn_volver_3.clicked.connect(self.volver_al_menu)
         self.ui.btn_volver_4.clicked.connect(self.volver_al_menu)
 
-        # =======================================================
-        # CONEXIONES - PESTAÑA 1: NUEVA VENTA
-        # =======================================================
         self.ui.btn_agregar_lista.clicked.connect(self.agregar_producto_tabla)
         self.ui.btn_quitar_lista.clicked.connect(self.quitar_producto_tabla)
         self.ui.btn_pagar_venta.clicked.connect(self.procesar_cobro)
         self.ui.txt_efectivo_recibido.textChanged.connect(self.calcular_cambio_en_caliente)
         
-        # =======================================================
-        # CONEXIONES - PESTAÑA 2: HISTORIAL
-        # =======================================================
         self.ui.btn_buscar_historial.clicked.connect(self.cargar_historial_ventas)
         self.ui.combo_filtro_fecha.currentIndexChanged.connect(self.cargar_historial_ventas)
         self.ui.btn_ver_ticket.clicked.connect(self.ver_ticket_historial)
         
-        # =======================================================
-        # CONEXIONES - PESTAÑA 3: DEVOLUCIONES
-        # =======================================================
         self.ui.btn_cargar_venta_devolucion.clicked.connect(self.cargar_folio_devolucion)
         self.ui.btn_confirmar_devolucion.clicked.connect(self.aplicar_devolucion)
         
-        # =======================================================
-        # CONEXIONES - PESTAÑA 4: CAJA
-        # =======================================================
         self.ui.btn_cerrar_caja.clicked.connect(self.imprimir_corte_caja)
 
         self.total_final = 0.0
@@ -65,8 +50,8 @@ class VentanaVentas(QWidget):
 
     def volver_al_menu(self):
         if self.ventana_menu:
-            self.ventana_menu.show()
-        self.close()
+            self.ventana_menu.ui.show()  # Cambiado: mostrar self.ventana_menu.ui
+        self.ui.close()  # Cambiado de self.close()
 
     def conectar_bd(self):
         return mysql.connector.connect(
@@ -371,6 +356,7 @@ class VentanaVentas(QWidget):
     def imprimir_corte_caja(self):
         caja_total = self.ui.txt_caja_total.text()
         QMessageBox.information(self.ui, "Corte de Caja", f"Turno cerrado con éxito.\nTotal de efectivo esperado en caja: {caja_total}")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

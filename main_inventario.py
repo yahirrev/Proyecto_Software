@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QMessageBox, QTableWidgetIt
 from PySide6.QtUiTools import QUiLoader
 import os
 
+
 class VentanaInventario(QWidget):
     def __init__(self, ventana_menu=None):
         super().__init__()
@@ -18,7 +19,6 @@ class VentanaInventario(QWidget):
         self.ui = loader.load(ruta_ui, self)
         if self.ui:
             self.ui.setWindowTitle("Ferretería Moret - Control de Inventario")
-            # Esto asegura que si el UI es un widget, tenga un tamaño mínimo
             self.ui.setMinimumSize(800, 600)
         
         self.ui.btn_volver.clicked.connect(self.volver_al_menu)
@@ -36,8 +36,8 @@ class VentanaInventario(QWidget):
 
     def volver_al_menu(self):
         if self.ventana_menu:
-            self.ventana_menu.show()
-        self.close()
+            self.ventana_menu.ui.show()  # Cambiado: mostrar self.ventana_menu.ui
+        self.ui.close()  # Cambiado de self.close()
 
     def conectar_bd(self):
         return mysql.connector.connect(
@@ -207,6 +207,7 @@ class VentanaInventario(QWidget):
         self.ui.txt_descripcion.clear()
         self.ui.txt_precio.clear()
         self.ui.spin_stock.setValue(0)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
