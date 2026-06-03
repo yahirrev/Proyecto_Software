@@ -1,8 +1,8 @@
 import sys
-import mysql.connector
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QWidget
 from PySide6.QtUiTools import QUiLoader
 import os
+from controladores import controlador_login
 
 from main_inventario import VentanaInventario
 from main_usuarios import VentanaUsuarios
@@ -15,7 +15,7 @@ class VentanaMenuPrincipal(QWidget):
         
         loader = QUiLoader()
         ruta_actual = os.path.dirname(os.path.abspath(__file__))
-        ruta_ui = os.path.join(ruta_actual, "menu_principal.ui")
+        ruta_ui = os.path.join(ruta_actual, "interfaces", "menu_principal.ui")
         self.ui = loader.load(ruta_ui, self)
         self.ui.setWindowTitle("Ferretería Moret - Menú Principal")
         
@@ -54,7 +54,7 @@ class VentanaLogin(QMainWindow):
         super().__init__()
         loader = QUiLoader()
         ruta_actual = os.path.dirname(os.path.abspath(__file__))
-        ruta_ui = os.path.join(ruta_actual, "login.ui")
+        ruta_ui = os.path.join(ruta_actual, "interfaces", "login.ui")
         self.ui = loader.load(ruta_ui, self)
         self.ui.setWindowTitle("Ferretería Moret - Control de Acceso")
         
@@ -69,18 +69,8 @@ class VentanaLogin(QMainWindow):
             return
 
         try:
-            conexion = mysql.connector.connect(
-                host="localhost", user="root", password="", database="ferreteria_sistema"
-            )
-            cursor = conexion.cursor()
-
-            consulta = """
-                SELECT id_usuario, nombre_completo, rol 
-                FROM usuarios 
-                WHERE username = %s AND password_hash = %s AND estatus = 'Activo'
-            """
-            cursor.execute(consulta, (usuario, password))
-            resultado = cursor.fetchone()
+            # Aqui se usa el controlador para verificar el usuario y contraseña ingresados
+            resultado = controlador_login.verificar_usuario(usuario, password)
 
             if resultado:
                 id_empleado = resultado[0]
@@ -99,11 +89,8 @@ class VentanaLogin(QMainWindow):
             else:
                 QMessageBox.critical(self.ui, "Acceso Denegado", "Credenciales incorrectas o usuario inactivo.")
 
-            cursor.close()
-            conexion.close()
-
-        except mysql.connector.Error as e:
-            QMessageBox.critical(self.ui, "Error de Servidor", f"No se pudo conectar a la base de datos:\n{e}")
+        except Exception as e:
+            QMessageBox.critical(self.ui, "Error de Servidor", f"No se pudo verificar el acceso:\n{e}")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import mysql.connector
 from mysql.connector import Error
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox, QTableWidgetItem
 from PySide6.QtUiTools import QUiLoader
+import controladores.controlador_inventario as controlador_inventario
 import os
 
 
@@ -14,7 +15,7 @@ class VentanaInventario(QWidget):
         
         loader = QUiLoader()
         ruta_actual = os.path.dirname(os.path.abspath(__file__))
-        ruta_ui = os.path.join(ruta_actual, "modulo_inventario.ui")
+        ruta_ui = os.path.join(ruta_actual, "interfaces", "modulo_inventario.ui")
         
         self.ui = loader.load(ruta_ui, self)
         if self.ui:
@@ -120,19 +121,13 @@ class VentanaInventario(QWidget):
                 QMessageBox.warning(self.ui, "Validación", "El precio de venta debe ser mayor a 0.")
                 return
                 
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            
-            query = "INSERT INTO productos (nombre, categoria, descripcion, precio_venta, stock) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(query, (nombre, categoria, descripcion, precio_num, stock))
-            conexion.commit()
+
+            controlador_inventario.guardar_producto(nombre, categoria, descripcion, precio_num, stock)
             
             QMessageBox.information(self.ui, "Éxito", "Nuevo artículo almacenado de manera permanente.")
             self.limpiar_formulario()
             self.cargar_tabla_productos()
             
-            cursor.close()
-            conexion.close()
         except ValueError:
             QMessageBox.warning(self.ui, "Error de Formato", "El precio debe ser un valor numérico.")
         except Error as e:
