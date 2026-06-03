@@ -1,0 +1,18 @@
+=========================================
+           FERRETERÍA MORET              
+      Xalapa - Coatepec, Veracruz        
+=========================================
+Folio Venta:  3
+Fecha Emisión: 2026-05-31 02:09:59
+Atendió:      Yahir Administrador
+-----------------------------------------
+Cant  Descripción       P.Unit   Subtot  
+-----------------------------------------
+2     Taladro de velo $1250.00 $2500.00
+-----------------------------------------
+Subtotal:                      $ 2155.17
+IVA (16%):                     $ 344.83
+TOTAL A PAGAR:                 $ 2500.00
+Efectivo Recibido:             $ 3000.00
+Cambio a Devolver:             $ 500.00
+=========================================
