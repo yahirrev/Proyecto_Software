@@ -1,6 +1,5 @@
 import sys
-import mysql.connector
-from mysql.connector import Error
+from controladores import controlador_ventas
 from PySide6.QtWidgets import QApplication, QWidget, QMessageBox, QTableWidgetItem
 from PySide6.QtUiTools import QUiLoader
 import os
@@ -17,7 +16,7 @@ class VentanaVentas(QWidget):
         
         loader = QUiLoader()
         ruta_actual = os.path.dirname(os.path.abspath(__file__))
-        ruta_ui = os.path.join(ruta_actual, "modulo_ventas.ui")
+        ruta_ui = os.path.join(ruta_actual, "interfaces", "modulo_ventas.ui")
         
         self.ui = loader.load(ruta_ui, self)
         if self.ui:
@@ -53,10 +52,6 @@ class VentanaVentas(QWidget):
             self.ventana_menu.ui.show()  # Cambiado: mostrar self.ventana_menu.ui
         self.ui.close()  # Cambiado de self.close()
 
-    def conectar_bd(self):
-        return mysql.connector.connect(
-            host="localhost", user="root", password="", database="ferreteria_sistema"
-        )
 
     def limpiar_pantalla_venta(self):
         self.ui.tabla_ventas.setRowCount(0)
@@ -75,11 +70,7 @@ class VentanaVentas(QWidget):
         cantidad = int(cantidad_texto)
 
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            
-            cursor.execute("SELECT descripcion, precio_venta, stock FROM productos WHERE id_producto = %s AND estatus = 'Activo'", (id_prod,))
-            producto = cursor.fetchone()
+            producto = controlador_ventas.obtener_producto_por_id(id_prod)
             
             if producto:
                 descripcion, precio, stock = producto
@@ -101,15 +92,18 @@ class VentanaVentas(QWidget):
                 self.ui.txt_codigo_producto.clear()
             else:
                 QMessageBox.critical(self.ui, "Error", f"Producto con ID '{id_prod}' no encontrado o está inactivo.")
-            cursor.close()
-            conexion.close()
-        except Error as e: print(e)
+        except Exception as e: 
+            print(f"Error al agregar producto: {e}")
+
+
 
     def quitar_producto_tabla(self):
         fila = self.ui.tabla_ventas.currentRow()
         if fila != -1:
             self.ui.tabla_ventas.removeRow(fila)
             self.recalcular_totales_desglose()
+
+
 
     def recalcular_totales_desglose(self):
         suma_carrito = 0.0
@@ -125,6 +119,9 @@ class VentanaVentas(QWidget):
         self.ui.txt_total_venta.setText(f"$ {self.total_final:.2f}")
         self.calcular_cambio_en_caliente()
 
+
+
+
     def calcular_cambio_en_caliente(self):
         efectivo_texto = self.ui.txt_efectivo_recibido.text().strip()
         if not efectivo_texto:
@@ -139,6 +136,9 @@ class VentanaVentas(QWidget):
                 self.ui.txt_cambio_cliente.setText("Falta dinero")
         except ValueError:
             self.ui.txt_cambio_cliente.setText("Inválido")
+
+
+
 
     def procesar_cobro(self):
         filas = self.ui.tabla_ventas.rowCount()
@@ -158,19 +158,10 @@ class VentanaVentas(QWidget):
 
         if QMessageBox.question(self.ui, "Confirmar Venta", f"¿Cobrar $ {self.total_final:.2f}?", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             try:
-                conexion = self.conectar_bd()
-                cursor = conexion.cursor()
-                
                 subtotal_calc = self.total_final / 1.16
                 impuesto_calc = self.total_final - subtotal_calc
                 
-                query_venta = """
-                    INSERT INTO ventas (subtotal, impuesto, total, id_usuario, estatus) 
-                    VALUES (%s, %s, %s, %s, 'Completada')
-                """
-                cursor.execute(query_venta, (subtotal_calc, impuesto_calc, self.total_final, self.id_usuario_real))
-                id_nueva_venta = cursor.lastrowid
-                
+                carrito_bd = []
                 datos_productos_ticket = []
                 
                 for i in range(filas):
@@ -180,25 +171,26 @@ class VentanaVentas(QWidget):
                     cantidad = int(self.ui.tabla_ventas.item(i, 3).text())
                     subtotal_item = float(self.ui.tabla_ventas.item(i, 4).text())
                     
+                    carrito_bd.append((id_prod, cantidad, precio, subtotal_item))
                     datos_productos_ticket.append((descripcion, cantidad, precio, subtotal_item))
-                    
-                    cursor.execute("INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario) VALUES (%s, %s, %s, %s)",
-                                   (id_nueva_venta, id_prod, cantidad, precio))
-                    
-                    cursor.execute("UPDATE productos SET stock = stock - %s WHERE id_producto = %s", (cantidad, id_prod))
                 
-                conexion.commit()
+                # se envia al controlador todo
+                id_nueva_venta = controlador_ventas.registrar_venta(
+                    subtotal_calc, impuesto_calc, self.total_final, self.id_usuario_real, carrito_bd
+                )
+                
                 self.generar_archivo_ticket(id_nueva_venta, datos_productos_ticket, efectivo, cambio_final)
-                
                 QMessageBox.information(self.ui, "Venta Exitosa", f"Venta registrada con Folio #{id_nueva_venta}. Cambio: $ {cambio_final:.2f}")
                 
                 self.limpiar_pantalla_venta()
                 self.cargar_historial_ventas()
                 self.actualizar_modulo_caja()
                 
-                cursor.close()
-                conexion.close()
-            except Error as e: QMessageBox.critical(self.ui, "Error", str(e))
+            except Exception as e: 
+                QMessageBox.critical(self.ui, "Error", f"Error en el cobro: {e}")
+
+
+
 
     def generar_archivo_ticket(self, folio, productos, recibido, cambio):
         fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -232,33 +224,28 @@ class VentanaVentas(QWidget):
             
         os.system(f"notepad.exe {nombre_archivo}")
 
+
+
+
+
     def cargar_historial_ventas(self):
         folio_buscar = self.ui.txt_buscar_folio.text().strip()
         filtro_fecha = self.ui.combo_filtro_fecha.currentText()
         orden = "DESC" if "recientes" in filtro_fecha.lower() else "ASC"
         
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            
-            if folio_buscar:
-                query = f"SELECT id_venta, fecha, total, id_usuario, estatus FROM ventas WHERE id_venta = %s ORDER BY id_venta {orden}"
-                cursor.execute(query, (folio_buscar,))
-            else:
-                query = f"SELECT id_venta, fecha, total, id_usuario, estatus FROM ventas ORDER BY id_venta {orden}"
-                cursor.execute(query)
-                
-            resultados = cursor.fetchall()
+            resultados = controlador_ventas.obtener_historial_ventas(folio_buscar, orden)
             self.ui.tabla_historial.setRowCount(0)
             
             for fila_idx, datos in enumerate(resultados):
                 self.ui.tabla_historial.insertRow(fila_idx)
                 for col_idx, valor in enumerate(datos):
                     self.ui.tabla_historial.setItem(fila_idx, col_idx, QTableWidgetItem(str(valor)))
-                    
-            cursor.close()
-            conexion.close()
-        except Error as e: print(e)
+        except Exception as e: 
+            print(f"Error cargando historial: {e}")
+
+
+
 
     def ver_ticket_historial(self):
         fila = self.ui.tabla_historial.currentRow()
@@ -273,17 +260,17 @@ class VentanaVentas(QWidget):
         else:
             QMessageBox.warning(self.ui, "Archivo no encontrado", f"El archivo del ticket #{folio} no se encuentra localmente.")
 
+
+
+
     def cargar_folio_devolucion(self):
         folio = self.ui.txt_folio_devolucion.text().strip()
         if not folio: return
         
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            cursor.execute("SELECT id_venta, total, estatus FROM ventas WHERE id_venta = %s", (folio,))
-            resultado = cursor.fetchone()
-            
+            resultado = controlador_ventas.obtener_venta_por_folio(folio)
             self.ui.tabla_folios_devolucion.setRowCount(0)
+            
             if resultado:
                 self.ui.tabla_folios_devolucion.insertRow(0)
                 for col_idx, valor in enumerate(resultado):
@@ -291,9 +278,11 @@ class VentanaVentas(QWidget):
                 self.ui.tabla_folios_devolucion.selectRow(0)
             else:
                 QMessageBox.warning(self.ui, "No encontrado", "El folio de venta ingresado no existe.")
-            cursor.close()
-            conexion.close()
-        except Error as e: print(e)
+        except Exception as e: 
+            print(f"Error cargando folio: {e}")
+
+
+
 
     def aplicar_devolucion(self):
         fila = self.ui.tabla_folios_devolucion.currentRow()
@@ -305,7 +294,7 @@ class VentanaVentas(QWidget):
         estatus = self.ui.tabla_folios_devolucion.item(fila, 2).text()
         motivo = self.ui.txt_motivo_anulacion.text().strip()
         
-        if estatus == "Devuelto":
+        if estatus == "Cancelada": # Actualizado para coincidir con la BD
             QMessageBox.warning(self.ui, "Aviso", "Esta venta ya fue anulada previamente.")
             return
             
@@ -315,43 +304,34 @@ class VentanaVentas(QWidget):
             
         if QMessageBox.question(self.ui, "Confirmar Anulación", f"¿Seguro que deseas anular la venta #{id_venta} y regresar el stock?", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             try:
-                conexion = self.conectar_bd()
-                cursor = conexion.cursor()
+                controlador_ventas.anular_venta(id_venta, motivo)
                 
-                cursor.execute("UPDATE ventas SET estatus = 'Devuelto', motivo_anulacion = %s WHERE id_venta = %s", (motivo, id_venta))
-                
-                cursor.execute("SELECT id_producto, cantidad FROM detalle_ventas WHERE id_venta = %s", (id_venta,))
-                for id_prod, cantidad in cursor.fetchall():
-                    cursor.execute("UPDATE productos SET stock = stock + %s WHERE id_producto = %s", (cantidad, id_prod))
-                
-                conexion.commit()
-                QMessageBox.information(self.ui, "Anulación Exitosa", f"Venta #{id_venta} marcada como 'Devuelto' y stock restaurado.")
+                QMessageBox.information(self.ui, "Anulación Exitosa", f"Venta #{id_venta} marcada como 'Cancelada' y stock restaurado automáticamente.")
                 
                 self.ui.txt_motivo_anulacion.clear()
                 self.cargar_folio_devolucion() 
                 self.cargar_historial_ventas()
                 self.actualizar_modulo_caja()
                 
-                cursor.close()
-                conexion.close()
-            except Error as e: print(e)
+            except Exception as e: 
+                print(f"Error anulando venta: {e}")
+
+
+
+                
 
     def actualizar_modulo_caja(self):
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            cursor.execute("SELECT SUM(total) FROM ventas WHERE estatus != 'Devuelto'")
-            res = cursor.fetchone()
-            ingresos = float(res[0]) if res[0] is not None else 0.0
+            ingresos = controlador_ventas.obtener_ingresos_activos()
             caja_inicial = 500.00
             
             self.ui.txt_caja_inicial.setText(f"$ {caja_inicial:.2f}")
             self.ui.txt_ingresos_ventas.setText(f"$ {ingresos:.2f}")
             self.ui.txt_caja_total.setText(f"$ {(caja_inicial + ingresos):.2f}")
+        except Exception as e: 
+            print(f"Error actualizando caja: {e}")
+
             
-            cursor.close()
-            conexion.close()
-        except Error as e: print(e)
 
     def imprimir_corte_caja(self):
         caja_total = self.ui.txt_caja_total.text()

@@ -6,6 +6,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QHeaderView
 import os
+from controladores import controlador_usuarios
 
 
 class VentanaUsuarios(QMainWindow): 
@@ -16,7 +17,7 @@ class VentanaUsuarios(QMainWindow):
         
         loader = QUiLoader()
         ruta_actual = os.path.dirname(os.path.abspath(__file__))
-        ruta_ui = os.path.join(ruta_actual, "modulo_usuarios.ui")
+        ruta_ui = os.path.join(ruta_actual, "interfaces", "modulo_usuarios.ui")
 
         self.ui = loader.load(ruta_ui, self)
         self.ui.setWindowTitle("Ferretería Moret - Control de Usuarios y Personal")
@@ -48,27 +49,12 @@ class VentanaUsuarios(QMainWindow):
             self.ventana_menu.ui.show()  # Cambiado: mostrar self.ventana_menu.ui
         self.ui.close()  # Cambiado de self.close()
 
-    def conectar_bd(self):
-        return mysql.connector.connect(
-            host="localhost", user="root", password="", database="ferreteria_sistema"
-        )
 
     def cargar_tabla_usuarios(self):
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            
             busqueda = self.ui.txt_buscar_usuario.text()
-            
-            query = "SELECT id_usuario, nombre_completo, username, rol, estatus FROM usuarios WHERE estatus = 'Activo'"
-            parametros = []
-            
-            if busqueda:
-                query = "SELECT id_usuario, nombre_completo, username, rol, estatus FROM usuarios WHERE (nombre_completo LIKE %s OR username LIKE %s)"
-                parametros.extend([f"%{busqueda}%", f"%{busqueda}%"])
-                
-            cursor.execute(query, parametros)
-            resultados = cursor.fetchall()
+            # llama al consolador 
+            resultados = controlador_usuarios.obtener_usuarios(busqueda)
             
             self.ui.tabla_usuarios.setRowCount(0)
             for fila_idx, fila_datos in enumerate(resultados):
@@ -76,10 +62,8 @@ class VentanaUsuarios(QMainWindow):
                 for col_idx, valor in enumerate(fila_datos):
                     item = QTableWidgetItem(str(valor))
                     self.ui.tabla_usuarios.setItem(fila_idx, col_idx, item)
-
-            cursor.close()
-            conexion.close()
-        except Error as e:
+                    
+        except Exception as e:
             print(f"Error al cargar tabla de usuarios: {e}")
 
     def cargar_atributos_usuario(self):
@@ -115,28 +99,19 @@ class VentanaUsuarios(QMainWindow):
             return
             
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            
-            cursor.execute("SELECT id_usuario FROM usuarios WHERE username = %s", (username,))
-            if cursor.fetchone():
+            # Valida si existe
+            if controlador_usuarios.verificar_usuario_existente(username):
                 QMessageBox.warning(self.ui, "Usuario Duplicado", f"El alias de usuario '{username}' ya existe. Elige otro.")
-                cursor.close()
-                conexion.close()
                 return
                 
-            query = """INSERT INTO usuarios (nombre_completo, username, password_hash, rol, estatus) 
-                       VALUES (%s, %s, %s, %s, 'Activo')"""
-            cursor.execute(query, (nombre, username, password, rol))
-            conexion.commit()
+            # Se registra
+            controlador_usuarios.registrar_usuario(nombre, username, password, rol)
             
             QMessageBox.information(self.ui, "Éxito", "Nuevo empleado incorporado al sistema correctamente.")
             self.limpiar_formulario()
             self.cargar_tabla_usuarios()
             
-            cursor.close()
-            conexion.close()
-        except Error as e:
+        except Exception as e:
             QMessageBox.critical(self.ui, "Error", f"No se pudo guardar el usuario: {e}")
 
     def actualizar_usuario(self):
@@ -154,31 +129,16 @@ class VentanaUsuarios(QMainWindow):
             return
             
         try:
-            conexion = self.conectar_bd()
-            cursor = conexion.cursor()
-            
-            if password.strip() != "":
-                query = """UPDATE usuarios 
-                           SET nombre_completo=%s, username=%s, password_hash=%s, rol=%s 
-                           WHERE id_usuario=%s"""
-                valores = (nombre, username, password, rol, self.id_usuario_seleccionado)
-            else:
-                query = """UPDATE usuarios 
-                           SET nombre_completo=%s, username=%s, rol=%s 
-                           WHERE id_usuario=%s"""
-                valores = (nombre, username, rol, self.id_usuario_seleccionado)
-                
-            cursor.execute(query, valores)
-            conexion.commit()
+            # se usa el consolador para esta madre
+            controlador_usuarios.actualizar_usuario(self.id_usuario_seleccionado, nombre, username, password, rol)
             
             QMessageBox.information(self.ui, "Éxito", "Información del empleado actualizada correctamente.")
             self.limpiar_formulario()
             self.cargar_tabla_usuarios()
             
-            cursor.close()
-            conexion.close()
-        except Error as e:
+        except Exception as e:
             QMessageBox.critical(self.ui, "Error", f"No se pudo actualizar el registro: {e}")
+
 
     def desactivar_usuario(self):
         if not self.id_usuario_seleccionado:
@@ -193,20 +153,14 @@ class VentanaUsuarios(QMainWindow):
         
         if respuesta == QMessageBox.Yes:
             try:
-                conexion = self.conectar_bd()
-                cursor = conexion.cursor()
-                
-                query = "UPDATE usuarios SET estatus = 'Inactivo' WHERE id_usuario = %s"
-                cursor.execute(query, (self.id_usuario_seleccionado,))
-                conexion.commit()
+                # Se da debaja el usuario con el consolador
+                controlador_usuarios.desactivar_usuario(self.id_usuario_seleccionado)
                 
                 QMessageBox.information(self.ui, "Estatus Modificado", "La cuenta de usuario ha sido dada de baja.")
                 self.limpiar_formulario()
                 self.cargar_tabla_usuarios()
                 
-                cursor.close()
-                conexion.close()
-            except Error as e:
+            except Exception as e:
                 QMessageBox.critical(self.ui, "Error", f"No se pudo cambiar el estatus: {e}")
 
     def activar_usuario(self):
